@@ -1,0 +1,16 @@
+﻿  main.cpp
+C:\Users\Justin\Desktop\VisualStudioSDLProject\SDLProject\main.cpp(33,26): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\Justin\Desktop\VisualStudioSDLProject\SDLProject\main.cpp(34,17): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\Justin\Desktop\VisualStudioSDLProject\SDLProject\main.cpp(35,18): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\Justin\Desktop\VisualStudioSDLProject\SDLProject\main.cpp(36,20): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\Justin\Desktop\VisualStudioSDLProject\SDLProject\main.cpp(48,12): error C2374: 'V_SHADER_PATH': redefinition; multiple initialization
+C:\Users\Justin\Desktop\VisualStudioSDLProject\SDLProject\main.cpp(30,12): message : see declaration of 'V_SHADER_PATH'
+C:\Users\Justin\Desktop\VisualStudioSDLProject\SDLProject\main.cpp(49,1): error C2374: 'F_SHADER_PATH': redefinition; multiple initialization
+C:\Users\Justin\Desktop\VisualStudioSDLProject\SDLProject\main.cpp(31,1): message : see declaration of 'F_SHADER_PATH'
+C:\Users\Justin\Desktop\VisualStudioSDLProject\SDLProject\main.cpp(119,33): warning C4244: 'initializing': conversion from 'genType' to 'const float', possible loss of data
+          with
+          [
+              genType=double
+          ]
+C:\Users\Justin\Desktop\VisualStudioSDLProject\SDLProject\main.cpp(135,24): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+C:\Users\Justin\Desktop\VisualStudioSDLProject\SDLProject\main.cpp(149,19): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
