@@ -1,13 +1,9 @@
 ﻿  main.cpp
-C:\Users\cheok\OneDrive\Desktop\CS3113\2d scene\main.cpp(33,26): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-C:\Users\cheok\OneDrive\Desktop\CS3113\2d scene\main.cpp(34,17): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-C:\Users\cheok\OneDrive\Desktop\CS3113\2d scene\main.cpp(35,18): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-C:\Users\cheok\OneDrive\Desktop\CS3113\2d scene\main.cpp(36,20): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-C:\Users\cheok\OneDrive\Desktop\CS3113\2d scene\main.cpp(111,33): warning C4244: 'initializing': conversion from 'genType' to 'const float', possible loss of data
+C:\Users\cheok\OneDrive\Desktop\CS3113\2d scene\main.cpp(136,33): warning C4244: 'initializing': conversion from 'genType' to 'const float', possible loss of data
           with
           [
               genType=double
           ]
-C:\Users\cheok\OneDrive\Desktop\CS3113\2d scene\main.cpp(127,24): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
-C:\Users\cheok\OneDrive\Desktop\CS3113\2d scene\main.cpp(141,19): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+C:\Users\cheok\OneDrive\Desktop\CS3113\2d scene\main.cpp(147,25): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+C:\Users\cheok\OneDrive\Desktop\CS3113\2d scene\main.cpp(148,25): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
   SDLProject.vcxproj -> C:\Users\cheok\OneDrive\Desktop\CS3113\2d scene\Debug\SDLProject.exe

@@ -31,4 +31,12 @@
     <CopyFileToFolders Include="glew32.dll" />
     <CopyFileToFolders Include="SDL2.dll" />
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="faceit.png">
+      <Filter>Source Files</Filter>
+    </Image>
+    <Image Include="keyboards.png">
+      <Filter>Source Files</Filter>
+    </Image>
+  </ItemGroup>
 </Project>
