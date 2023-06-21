@@ -7,6 +7,9 @@
 * NYU School of Engineering Policies and Procedures on
 * Academic Misconduct.
 **/
+
+// NOTE: The character's hitbox (collision box) is towards their hands
+
 #define GL_SILENCE_DEPRECATION
 #define GL_GLEXT_PROTOTYPES 1
 #define LOG(argument) std::cout << argument << '\n'
@@ -79,19 +82,24 @@ bool start = true;
 
 glm::vec3 g_paddle1_position = glm::vec3(-4.2f, 0.0f, 0.0f),
 g_paddle1_movement = glm::vec3(0.0f, 0.0f, 0.0f),
+g_paddle1_scale = glm::vec3(1.0f, 1.0f, 0.0f),
 
 g_paddle2_position = glm::vec3(4.2f, 0.0f, 0.0f),
 g_paddle2_movement = glm::vec3(0.0f, 0.0f, 0.0f),
+g_paddle2_scale = glm::vec3(1.0f, 1.0f, 0.0f),
 
 g_ball_position = glm::vec3(0.0f, 0.0f, 0.0f),
-g_ball_movement = glm::vec3(0.0f, 0.0f, 0.0f);
+g_ball_movement = glm::vec3(0.0f, 0.0f, 0.0f),
+g_ball_scale = glm::vec3(1.0f, 1.0f, 0.0f);
 
 
-// Calculating distance between two objects with Pythagorean
-float pythagorean(glm::vec3& position_a, glm::vec3& position_b)
+/* Pythagorean theorem for circle-to-circle collision
+float pythagorean(glm::vec3& a, glm::vec3& b)
 {
-    return sqrt(pow(position_b.x - position_a.x, 2) + pow(position_b.y - position_a.y, 2));
+    //distance^2 = (x-distance)^2 + (y-distance)^2)
+    return sqrt(pow(b.x - a.x, 2) + pow(b.y - a.y, 2));
 }
+*/
 
 GLuint load_texture(const char* filepath)
 {
@@ -142,6 +150,7 @@ void initialise()
     g_paddle1_program.Load(V_SHADER_PATH, F_SHADER_PATH);
 
     g_paddle1_model_matrix = glm::mat4(1.0f);
+    g_paddle1_model_matrix = glm::scale(g_paddle1_model_matrix, g_paddle1_scale);
 
     g_paddle1_program.SetProjectionMatrix(g_projection_matrix);
     g_paddle1_program.SetViewMatrix(g_view_matrix);
@@ -152,6 +161,7 @@ void initialise()
     g_paddle2_program.Load(V_SHADER_PATH, F_SHADER_PATH);
 
     g_paddle2_model_matrix = glm::mat4(1.0f);
+    g_paddle2_model_matrix = glm::scale(g_paddle2_model_matrix, g_paddle2_scale);
 
     g_paddle2_program.SetProjectionMatrix(g_projection_matrix);
     g_paddle2_program.SetViewMatrix(g_view_matrix);
@@ -163,6 +173,7 @@ void initialise()
     g_ball_program.Load(V_SHADER_PATH, F_SHADER_PATH);
 
     g_ball_model_matrix = glm::mat4(1.0f);
+    g_ball_model_matrix = glm::scale(g_ball_model_matrix, g_ball_scale);
 
     g_ball_program.SetProjectionMatrix(g_projection_matrix);
     g_ball_program.SetViewMatrix(g_view_matrix);
@@ -225,9 +236,10 @@ void process_input()
         g_paddle2_movement.y = -1.0f;
     }
 }
+// Randomize Y-direction after collision
 float randomY() {
     float randomInt = rand() % 100 + 1; //Give a number between 1 and 100
-    //Randomize Y-direction for a decimal between 0-1
+    // Decimal between 0-1
     return randomInt > 50 ? (rand() % 100 + static_cast<float>(1)) / 100 : -((rand() % 100 + static_cast<float>(1)) / 100);
 }
 void update()
@@ -237,21 +249,12 @@ void update()
         // g_ball_movement.y = randomY();
         start = false;
     }
-    /* Copied from in-class exercise, did not end up working. Removed everything to do with scaling and made
-    * game purely based on x and y distance (Pythagorean coded in beginning)
-    float pad1_x_distance = fabs(g_paddle1_position.x - g_ball_position.x) - ((paddle1_INIT_SCA.x * collision_factor + ball_INIT_SCA.x * collision_factor) / 2.0f);
-    float pad1_y_distance = fabs(g_paddle1_position.y - g_ball_position.y) - ((paddle1_INIT_SCA.y * collision_factor + ball_INIT_SCA.y * collision_factor) / 2.0f);
 
-    float pad2_x_distance = fabs(g_paddle2_position.x - g_ball_position.x) - ((paddle2_INIT_SCA.x * collision_factor + ball_INIT_SCA.x * collision_factor) / 2.0f);
-    float pad2_y_distance = fabs(g_paddle2_position.y - g_ball_position.y) - ((paddle2_INIT_SCA.y * collision_factor + ball_INIT_SCA.y * collision_factor) / 2.0f);
-
-    float collision_factor = 0.07f;
-    */
-    
     // ———————————————— COLLISIONS ———————————————— //
-    if ((g_ball_position.x <= -4.4f) || (g_ball_position.x >= 4.4f)) { // If ball is out
-        g_game_is_running = false;
-    }
+
+    
+    /* Testing circle-to-circle collision
+    
     if (pythagorean(g_ball_position, g_paddle1_position) < 0.75f) { // Left player collision
         g_ball_movement.x = 1.0f;
         g_ball_movement.y = randomY();
@@ -260,6 +263,18 @@ void update()
         g_ball_movement.x = -1.0f;
         g_ball_movement.y = randomY();
     }
+    */
+    // Box-to-box collision
+    if ((g_ball_position.x <= -5.0f) || (g_ball_position.x >= 5.0f)) { // If ball is out
+        g_game_is_running = false;
+    }
+    float collision_factor = 0.2f;
+    float pad1_x_distance = fabs(g_paddle1_position.x - g_ball_position.x) - ((g_paddle1_scale.x * collision_factor + g_ball_scale.x * collision_factor) / 2.0f);
+    float pad1_y_distance = fabs(g_paddle1_position.y - g_ball_position.y) - ((g_paddle1_scale.y * collision_factor + g_ball_scale.y * collision_factor) / 2.0f);
+
+    float pad2_x_distance = fabs(g_paddle2_position.x - g_ball_position.x) - ((g_paddle2_scale.x * collision_factor + g_ball_scale.x * collision_factor) / 2.0f);
+    float pad2_y_distance = fabs(g_paddle2_position.y - g_ball_position.y) - ((g_paddle2_scale.y * collision_factor + g_ball_scale.y * collision_factor) / 2.0f);
+
     // Top & bottom barrier collision
     if (g_ball_position.y >= 3.75f) {
         g_ball_movement.y = -1.0f;
@@ -267,24 +282,20 @@ void update()
     else if (g_ball_position.y <= -3.75f) {
         g_ball_movement.y = 1.0f;
     }
+    
+    if (pad1_x_distance < 0 && pad1_y_distance < 0) {
+        g_ball_movement.x = 1.0f;
+        g_ball_movement.y = randomY();
+    }
+    if (pad2_x_distance < 0 && pad2_y_distance < 0) {
+        g_ball_movement.x = -1.0f;
+        g_ball_movement.y = randomY();
+    }
 
     // ———————————————— DELTA TIME CALCULATIONS ———————————————— //
     float ticks = (float)SDL_GetTicks() / MILLISECONDS_IN_SECOND;
     float delta_time = ticks - g_previous_ticks;
     g_previous_ticks = ticks;
-
-    if (g_ball_position.x > 4.4f) {
-        g_ball_movement.x = -1.0f;
-    }
-    else if (g_ball_position.x < -4.4f) {
-        g_ball_movement.x = 1.0f;
-    }
-    if (g_ball_position.y > 3.3f) {
-        g_ball_movement.y = -g_ball_movement.y;
-    }
-    else if (g_ball_position.y < -3.3f) {
-        g_ball_movement.y = -g_ball_movement.y;
-    }
 
     g_paddle1_position += g_paddle1_movement * delta_time * g_paddle_speed;
     g_paddle2_position += g_paddle2_movement * delta_time * g_paddle_speed;

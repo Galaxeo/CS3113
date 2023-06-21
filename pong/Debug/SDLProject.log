@@ -1,4 +1,4 @@
 ﻿  main.cpp
-C:\Users\cheok\OneDrive\Desktop\CS3113\pong\main.cpp(93,16): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
-C:\Users\cheok\OneDrive\Desktop\CS3113\pong\main.cpp(229,21): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+C:\Users\cheok\OneDrive\Desktop\CS3113\pong\main.cpp(97,16): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+C:\Users\cheok\OneDrive\Desktop\CS3113\pong\main.cpp(237,21): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
   SDLProject.vcxproj -> C:\Users\cheok\OneDrive\Desktop\CS3113\pong\Debug\SDLProject.exe
