@@ -88,7 +88,7 @@ g_ball_movement = glm::vec3(0.0f, 0.0f, 0.0f);
 
 
 // Calculating distance between two objects with Pythagorean
-float distance(glm::vec3& position_a, glm::vec3& position_b)
+float pythagorean(glm::vec3& position_a, glm::vec3& position_b)
 {
     return sqrt(pow(position_b.x - position_a.x, 2) + pow(position_b.y - position_a.y, 2));
 }
@@ -252,11 +252,11 @@ void update()
     if ((g_ball_position.x <= -4.4f) || (g_ball_position.x >= 4.4f)) { // If ball is out
         g_game_is_running = false;
     }
-    if (distance(g_ball_position, g_paddle1_position) < 0.75f) { // Left player collision
+    if (pythagorean(g_ball_position, g_paddle1_position) < 0.75f) { // Left player collision
         g_ball_movement.x = 1.0f;
         g_ball_movement.y = randomY();
     }
-    else if (distance(g_ball_position, g_paddle2_position) < 0.75f) { // Right player collision
+    else if (pythagorean(g_ball_position, g_paddle2_position) < 0.75f) { // Right player collision
         g_ball_movement.x = -1.0f;
         g_ball_movement.y = randomY();
     }
