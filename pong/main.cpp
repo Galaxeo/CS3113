@@ -30,6 +30,9 @@
 // Include stdlib.h for rand
 #include <stdlib.h>
 
+// Include vector for drawing font
+#include <vector>
+
 const int WINDOW_WIDTH = 640,
 WINDOW_HEIGHT = 480;
 
@@ -49,12 +52,15 @@ F_SHADER_PATH[] = "shaders/fragment_textured.glsl";
 const char paddle1_SPRITE[] = "evan.png";
 const char paddle2_SPRITE[] = "mage.png";
 const char ball_SPRITE[] = "slime.png";
+const char font_SPRITE[] = "font1.png";
 
 const int NUMBER_OF_TEXTURES = 1;
 const GLint LEVEL_OF_DETAIL = 0;
 const GLint TEXTURE_BORDER = 0;
 
 const float MILLISECONDS_IN_SECOND = 1000.0;
+
+const int FONTBANK_SIZE = 16;
 
 SDL_Window* g_display_window;
 bool g_game_is_running = true;
@@ -68,6 +74,9 @@ GLuint        g_paddle2_texture_id;
 ShaderProgram g_ball_program;
 GLuint        g_ball_texture_id;
 
+ShaderProgram g_text_program;
+GLuint        g_text_texture_id;
+
 glm::mat4 g_view_matrix,
 g_paddle1_model_matrix,
 g_paddle2_model_matrix,
@@ -78,7 +87,9 @@ float g_paddle_speed = 3.0f,
 g_ball_speed = 2.5f,
 g_previous_ticks = 0.0f;
 
-bool start = true;
+bool start = true,
+game_over = false,
+p1_win = true;
 
 glm::vec3 g_paddle1_position = glm::vec3(-4.2f, 0.0f, 0.0f),
 g_paddle1_movement = glm::vec3(0.0f, 0.0f, 0.0f),
@@ -100,6 +111,66 @@ float pythagorean(glm::vec3& a, glm::vec3& b)
     return sqrt(pow(b.x - a.x, 2) + pow(b.y - a.y, 2));
 }
 */
+void draw_text(ShaderProgram* program, GLuint font_texture_id, std::string text, float screen_size, float spacing, glm::vec3 position)
+{
+    // Scale the size of the fontbank in the UV-plane
+    // We will use this for spacing and positioning
+    float width = 1.0f / FONTBANK_SIZE;
+    float height = 1.0f / FONTBANK_SIZE;
+
+    // Instead of having a single pair of arrays, we'll have a series of pairs—one for each character
+    // Don't forget to include <vector>!
+    std::vector<float> vertices;
+    std::vector<float> texture_coordinates;
+
+    // For every character...
+    for (int i = 0; i < text.size(); i++) {
+        // 1. Get their index in the spritesheet, as well as their offset (i.e. their position
+        //    relative to the whole sentence)
+        int spritesheet_index = (int)text[i];  // asc   ii value of character
+        float offset = (screen_size + spacing) * i;
+
+        // 2. Using the spritesheet index, we can calculate our U- and V-coordinates
+        float u_coordinate = (float)(spritesheet_index % FONTBANK_SIZE) / FONTBANK_SIZE;
+        float v_coordinate = (float)(spritesheet_index / FONTBANK_SIZE) / FONTBANK_SIZE;
+
+        // 3. Inset the current pair in both vectors
+        vertices.insert(vertices.end(), {
+            offset + (-0.5f * screen_size), 0.5f * screen_size,
+            offset + (-0.5f * screen_size), -0.5f * screen_size,
+            offset + (0.5f * screen_size), 0.5f * screen_size,
+            offset + (0.5f * screen_size), -0.5f * screen_size,
+            offset + (0.5f * screen_size), 0.5f * screen_size,
+            offset + (-0.5f * screen_size), -0.5f * screen_size,
+            });
+
+        texture_coordinates.insert(texture_coordinates.end(), {
+            u_coordinate, v_coordinate,
+            u_coordinate, v_coordinate + height,
+            u_coordinate + width, v_coordinate,
+            u_coordinate + width, v_coordinate + height,
+            u_coordinate + width, v_coordinate,
+            u_coordinate, v_coordinate + height,
+            });
+    }
+    // 4. And render all of them using the pairs
+    glm::mat4 model_matrix = glm::mat4(1.0f);
+    model_matrix = glm::translate(model_matrix, position);
+
+    program->SetModelMatrix(model_matrix);
+    glUseProgram(program->programID);
+
+    glVertexAttribPointer(program->positionAttribute, 2, GL_FLOAT, false, 0, vertices.data());
+    glEnableVertexAttribArray(program->positionAttribute);
+    glVertexAttribPointer(program->texCoordAttribute, 2, GL_FLOAT, false, 0, texture_coordinates.data());
+    glEnableVertexAttribArray(program->texCoordAttribute);
+
+    glBindTexture(GL_TEXTURE_2D, font_texture_id);
+    glDrawArrays(GL_TRIANGLES, 0, (int)(text.size() * 6));
+
+    glDisableVertexAttribArray(program->positionAttribute);
+    glDisableVertexAttribArray(program->texCoordAttribute);
+}
 
 GLuint load_texture(const char* filepath)
 {
@@ -180,6 +251,13 @@ void initialise()
     glUseProgram(g_ball_program.programID);
     g_ball_texture_id = load_texture(ball_SPRITE);
 
+    // ———————————————— text ———————————————— //
+    g_text_program.Load(V_SHADER_PATH, F_SHADER_PATH);
+    g_text_program.SetProjectionMatrix(g_projection_matrix);
+    g_text_program.SetViewMatrix(g_view_matrix);
+
+    glUseProgram(g_text_program.programID);
+    g_text_texture_id = load_texture(font_SPRITE);
 
     // ———————————————— GENERAL ———————————————— //
     glEnable(GL_BLEND);
@@ -235,6 +313,11 @@ void process_input()
     {
         g_paddle2_movement.y = -1.0f;
     }
+
+    if (key_state[SDL_SCANCODE_Q])
+    {
+        g_game_is_running = false;
+    }
 }
 // Randomize Y-direction after collision
 float randomY() {
@@ -266,7 +349,14 @@ void update()
     */
     // Box-to-box collision
     if ((g_ball_position.x <= -5.0f) || (g_ball_position.x >= 5.0f)) { // If ball is out
-        g_game_is_running = false;
+        game_over = true;
+        g_ball_movement = glm::vec3(0.0f, 0.0f, 0.0f);
+        if (g_ball_position.x <= -5.0f) {
+            p1_win = false;
+        }
+        else if (g_ball_position.x >= 5.0f) {
+            p1_win = true;
+        }
     }
     float collision_factor = 0.2f;
     float pad1_x_distance = fabs(g_paddle1_position.x - g_ball_position.x) - ((g_paddle1_scale.x * collision_factor + g_ball_scale.x * collision_factor) / 2.0f);
@@ -317,6 +407,18 @@ void update()
 
 void render() {
     glClear(GL_COLOR_BUFFER_BIT);
+
+    if (game_over) {
+        if (p1_win) {
+            draw_text(&g_text_program, g_text_texture_id, std::string("PLAYER 1 WINS"), 0.25f, 0.0f, glm::vec3(-1.5f, 2.0f, 0.0f));
+            draw_text(&g_text_program, g_text_texture_id, std::string("PRESS Q TO QUIT"), 0.25f, 0.01f, glm::vec3(-1.75f, 1.5f, 0.0f));
+        }
+        else {
+            draw_text(&g_text_program, g_text_texture_id, std::string("PLAYER 2 WINS"), 0.25f, 0.0f, glm::vec3(-1.5f, 2.0f, 0.0f));
+            draw_text(&g_text_program, g_text_texture_id, std::string("PRESS Q TO QUIT"), 0.25f, 0.01f, glm::vec3(-1.75f, 1.5f, 0.0f));
+        }
+       
+    }
 
     // ———————————————— paddle1 ———————————————— //
     float paddle1_vertices[] = {

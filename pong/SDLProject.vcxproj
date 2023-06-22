@@ -146,6 +146,7 @@
   <ItemGroup>
     <Image Include="evan.png" />
     <Image Include="faceit.png" />
+    <Image Include="font1.png" />
     <Image Include="keyboards.png" />
     <Image Include="mage.png" />
     <Image Include="slime.png" />
