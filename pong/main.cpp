@@ -111,6 +111,8 @@ float pythagorean(glm::vec3& a, glm::vec3& b)
     return sqrt(pow(b.x - a.x, 2) + pow(b.y - a.y, 2));
 }
 */
+
+// Draw text function used from in-class exercise
 void draw_text(ShaderProgram* program, GLuint font_texture_id, std::string text, float screen_size, float spacing, glm::vec3 position)
 {
     // Scale the size of the fontbank in the UV-plane
