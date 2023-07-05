@@ -1,0 +1,4 @@
+﻿  main.cpp
+C:\Users\cheok\OneDrive\Desktop\CS3113\lunarLander\Entity.h(78,55): warning C4244: 'return': conversion from 'const float' to 'const int', possible loss of data
+C:\Users\cheok\OneDrive\Desktop\CS3113\lunarLander\Entity.h(79,55): warning C4244: 'return': conversion from 'const float' to 'const int', possible loss of data
+  SDLProject.vcxproj -> C:\Users\cheok\OneDrive\Desktop\CS3113\lunarLander\Debug\SDLProject.exe
