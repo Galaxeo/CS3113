@@ -1,3 +1,12 @@
+/**
+* Author: Justin Cheok
+* Assignment: Lunar Lander
+* Date due: 2023-07-07, 11:59pm
+* I pledge that I have completed this assignment without
+* collaborating with anyone else, in conformance with the
+* NYU School of Engineering Policies and Procedures on
+* Academic Misconduct.
+**/
 enum EntityType { PLATFORM, PLAYER, ITEM };
 
 class Entity
@@ -19,7 +28,15 @@ private:
     float m_width = 1;
     float m_height = 1;
 
+    // -- FLAG FOR GOAL PLATFORM -- //
+    bool m_goal_platform = false;
+
+    
+
 public:
+    // -- FLAG FOR COLLISION WITH GOAL PLATFORM -- //
+    bool m_finish;
+
     // ––––– STATIC ATTRIBUTES ––––– //
     static const int SECONDS_PER_FRAME = 4;
     static const int LEFT = 0,
@@ -77,6 +94,8 @@ public:
     glm::vec3 const get_acceleration() const { return m_acceleration; };
     int       const get_width()        const { return m_width; };
     int       const get_height()       const { return m_height; };
+    bool      const get_goal()         const { return m_goal_platform; };
+    bool      const get_finish()         const { return m_finish; };
 
     // ––––– SETTERS ––––– //
     void const set_position(glm::vec3 new_position) { m_position = new_position; };
@@ -85,4 +104,6 @@ public:
     void const set_acceleration(glm::vec3 new_acceleration) { m_acceleration = new_acceleration; };
     void const set_width(float new_width) { m_width = new_width; };
     void const set_height(float new_height) { m_height = new_height; };
+    void const set_goal(bool goal) { m_goal_platform = goal; }; // So we know what platform is the one to land on
+    void const set_finish(bool finish) { m_finish = finish; }; // So we know if we landed on the right platform
 };

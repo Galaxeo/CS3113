@@ -1,4 +1,9 @@
-﻿  main.cpp
-C:\Users\cheok\OneDrive\Desktop\CS3113\lunarLander\Entity.h(78,55): warning C4244: 'return': conversion from 'const float' to 'const int', possible loss of data
-C:\Users\cheok\OneDrive\Desktop\CS3113\lunarLander\Entity.h(79,55): warning C4244: 'return': conversion from 'const float' to 'const int', possible loss of data
+﻿  Entity.cpp
+C:\Users\cheok\OneDrive\Desktop\CS3113\lunarLander\Entity.h(95,55): warning C4244: 'return': conversion from 'const float' to 'const int', possible loss of data
+C:\Users\cheok\OneDrive\Desktop\CS3113\lunarLander\Entity.h(96,55): warning C4244: 'return': conversion from 'const float' to 'const int', possible loss of data
+  main.cpp
+C:\Users\cheok\OneDrive\Desktop\CS3113\lunarLander\Entity.h(95,55): warning C4244: 'return': conversion from 'const float' to 'const int', possible loss of data
+C:\Users\cheok\OneDrive\Desktop\CS3113\lunarLander\Entity.h(96,55): warning C4244: 'return': conversion from 'const float' to 'const int', possible loss of data
+C:\Users\cheok\OneDrive\Desktop\CS3113\lunarLander\main.cpp(101,23): warning C4018: '<': signed/unsigned mismatch
+  Generating Code...
   SDLProject.vcxproj -> C:\Users\cheok\OneDrive\Desktop\CS3113\lunarLander\Debug\SDLProject.exe

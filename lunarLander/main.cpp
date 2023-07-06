@@ -1,9 +1,18 @@
+/**
+* Author: Justin Cheok
+* Assignment: Lunar Lander
+* Date due: 2023-07-07, 11:59pm
+* I pledge that I have completed this assignment without
+* collaborating with anyone else, in conformance with the
+* NYU School of Engineering Policies and Procedures on
+* Academic Misconduct.
+**/
 #define GL_SILENCE_DEPRECATION
 #define STB_IMAGE_IMPLEMENTATION
 #define LOG(argument) std::cout << argument << '\n'
 #define GL_GLEXT_PROTOTYPES 1
 #define FIXED_TIMESTEP 0.0166666f
-#define PLATFORM_COUNT 5
+#define PLATFORM_COUNT 6
 
 #ifdef _WINDOWS
 #include <GL/glew.h>
@@ -46,7 +55,11 @@ F_SHADER_PATH[] = "shaders/fragment_textured.glsl";
 
 const float MILLISECONDS_IN_SECOND = 1000.0;
 const char BOAT_FILEPATH[] = "assets/boat.png";
-const char PLATFORM_FILEPATH[] = "assets/platformPack_tile027.png";
+const char PLATFORMgood_FILEPATH[] = "assets/mcIce.png";
+const char PLATFORMbad_FILEPATH[] = "assets/mcLava.png";
+const char font_SPRITE[] = "assets/font1.png";
+
+const int FONTBANK_SIZE = 16;
 
 const int NUMBER_OF_TEXTURES = 1;
 const GLint LEVEL_OF_DETAIL = 0;
@@ -60,11 +73,78 @@ bool g_game_is_running = true;
 
 ShaderProgram g_program;
 glm::mat4 g_view_matrix, g_projection_matrix;
+ShaderProgram g_text_program;
+GLuint        g_text_texture_id;
 
 float g_previous_ticks = 0.0f;
 float g_accumulator = 0.0f;
+bool g_gameOver = false;
+bool g_gameWon = false;
+int g_direction_swap = 10; // serves as fuel
+int g_direction = 0; // 0 for nothing, 1 for right, 2 for left
 
 // ––––– GENERAL FUNCTIONS ––––– //
+// Draw text function used from in-class exercise
+void draw_text(ShaderProgram* program, GLuint font_texture_id, std::string text, float screen_size, float spacing, glm::vec3 position)
+{
+    // Scale the size of the fontbank in the UV-plane
+    // We will use this for spacing and positioning
+    float width = 1.0f / FONTBANK_SIZE;
+    float height = 1.0f / FONTBANK_SIZE;
+
+    // Instead of having a single pair of arrays, we'll have a series of pairs—one for each character
+    // Don't forget to include <vector>!
+    std::vector<float> vertices;
+    std::vector<float> texture_coordinates;
+
+    // For every character...
+    for (int i = 0; i < text.size(); i++) {
+        // 1. Get their index in the spritesheet, as well as their offset (i.e. their position
+        //    relative to the whole sentence)
+        int spritesheet_index = (int)text[i];  // asc   ii value of character
+        float offset = (screen_size + spacing) * i;
+
+        // 2. Using the spritesheet index, we can calculate our U- and V-coordinates
+        float u_coordinate = (float)(spritesheet_index % FONTBANK_SIZE) / FONTBANK_SIZE;
+        float v_coordinate = (float)(spritesheet_index / FONTBANK_SIZE) / FONTBANK_SIZE;
+
+        // 3. Inset the current pair in both vectors
+        vertices.insert(vertices.end(), {
+            offset + (-0.5f * screen_size), 0.5f * screen_size,
+            offset + (-0.5f * screen_size), -0.5f * screen_size,
+            offset + (0.5f * screen_size), 0.5f * screen_size,
+            offset + (0.5f * screen_size), -0.5f * screen_size,
+            offset + (0.5f * screen_size), 0.5f * screen_size,
+            offset + (-0.5f * screen_size), -0.5f * screen_size,
+            });
+
+        texture_coordinates.insert(texture_coordinates.end(), {
+            u_coordinate, v_coordinate,
+            u_coordinate, v_coordinate + height,
+            u_coordinate + width, v_coordinate,
+            u_coordinate + width, v_coordinate + height,
+            u_coordinate + width, v_coordinate,
+            u_coordinate, v_coordinate + height,
+            });
+    }
+    // 4. And render all of them using the pairs
+    glm::mat4 model_matrix = glm::mat4(1.0f);
+    model_matrix = glm::translate(model_matrix, position);
+
+    program->SetModelMatrix(model_matrix);
+    glUseProgram(program->programID);
+
+    glVertexAttribPointer(program->positionAttribute, 2, GL_FLOAT, false, 0, vertices.data());
+    glEnableVertexAttribArray(program->positionAttribute);
+    glVertexAttribPointer(program->texCoordAttribute, 2, GL_FLOAT, false, 0, texture_coordinates.data());
+    glEnableVertexAttribArray(program->texCoordAttribute);
+
+    glBindTexture(GL_TEXTURE_2D, font_texture_id);
+    glDrawArrays(GL_TRIANGLES, 0, (int)(text.size() * 6));
+
+    glDisableVertexAttribArray(program->positionAttribute);
+    glDisableVertexAttribArray(program->texCoordAttribute);
+}
 GLuint load_texture(const char* filepath)
 {
     int width, height, number_of_components;
@@ -96,7 +176,7 @@ GLuint load_texture(const char* filepath)
 void initialise()
 {
     SDL_Init(SDL_INIT_VIDEO);
-    g_display_window = SDL_CreateWindow("Lunar Lander",
+    g_display_window = SDL_CreateWindow("Lunar Lander assignment",
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
         WINDOW_WIDTH, WINDOW_HEIGHT,
         SDL_WINDOW_OPENGL);
@@ -123,27 +203,34 @@ void initialise()
     glClearColor(BG_RED, BG_BLUE, BG_GREEN, BG_OPACITY);
 
     // ––––– PLATFORMS ––––– //
-    GLuint platform_texture_id = load_texture(PLATFORM_FILEPATH);
+    GLuint platformBad_texture_id = load_texture(PLATFORMbad_FILEPATH);
+    GLuint platformGood_texture_id = load_texture(PLATFORMgood_FILEPATH);
 
     g_state.platforms = new Entity[PLATFORM_COUNT];
 
-    g_state.platforms[PLATFORM_COUNT - 1].m_texture_id = platform_texture_id;
-    g_state.platforms[PLATFORM_COUNT - 1].set_position(glm::vec3(-1.5f, -2.35f, 0.0f));
+    g_state.platforms[PLATFORM_COUNT - 1].m_texture_id = platformBad_texture_id;
+    g_state.platforms[PLATFORM_COUNT - 1].set_position(glm::vec3(-2.0f, 0.65f, 0.0f));
     g_state.platforms[PLATFORM_COUNT - 1].set_width(0.4f);
     g_state.platforms[PLATFORM_COUNT - 1].update(0.0f, NULL, 0);
 
-    for (int i = 0; i < PLATFORM_COUNT - 2; i++)
+    for (int i = 0; i < PLATFORM_COUNT - 3; i++)
     {
-        g_state.platforms[i].m_texture_id = platform_texture_id;
-        g_state.platforms[i].set_position(glm::vec3(i - 1.0f, -3.0f, 0.0f));
+        g_state.platforms[i].m_texture_id = platformBad_texture_id;
+        g_state.platforms[i].set_position(glm::vec3(i + 1.0f, -1.0f, 0.0f));
         g_state.platforms[i].set_width(0.4f);
         g_state.platforms[i].update(0.0f, NULL, 0);
     }
 
-    g_state.platforms[PLATFORM_COUNT - 2].m_texture_id = platform_texture_id;
-    g_state.platforms[PLATFORM_COUNT - 2].set_position(glm::vec3(2.5f, -2.5f, 0.0f));
+    g_state.platforms[PLATFORM_COUNT - 2].m_texture_id = platformBad_texture_id;
+    g_state.platforms[PLATFORM_COUNT - 2].set_position(glm::vec3(1.0f, 2.0f, 0.0f));
     g_state.platforms[PLATFORM_COUNT - 2].set_width(0.4f);
     g_state.platforms[PLATFORM_COUNT - 2].update(0.0f, NULL, 0);
+
+    g_state.platforms[PLATFORM_COUNT - 3].m_texture_id = platformGood_texture_id;
+    g_state.platforms[PLATFORM_COUNT - 3].set_position(glm::vec3(1.0f, -3.5f, 0.0f));
+    g_state.platforms[PLATFORM_COUNT - 3].set_width(0.4f);
+    g_state.platforms[PLATFORM_COUNT - 3].update(0.0f, NULL, 0);
+    g_state.platforms[PLATFORM_COUNT - 3].set_goal(true);
 
     // ––––– BOAT ––––– //
     // Existing
@@ -156,6 +243,14 @@ void initialise()
 
     // Jumping
     g_state.player->m_jumping_power = 3.0f;
+
+    // -- TEXT -- //
+    g_text_program.Load(V_SHADER_PATH, F_SHADER_PATH);
+    g_text_program.SetProjectionMatrix(g_projection_matrix);
+    g_text_program.SetViewMatrix(g_view_matrix);
+
+    glUseProgram(g_text_program.programID);
+    g_text_texture_id = load_texture(font_SPRITE);
 
     // ––––– GENERAL ––––– //
     glEnable(GL_BLEND);
@@ -183,11 +278,6 @@ void process_input()
                 g_game_is_running = false;
                 break;
 
-            case SDLK_SPACE:
-                // Jump
-                if (g_state.player->m_collided_bottom) g_state.player->m_is_jumping = true;
-                break;
-
             default:
                 break;
             }
@@ -199,21 +289,40 @@ void process_input()
 
     const Uint8* key_state = SDL_GetKeyboardState(NULL);
 
-    if (key_state[SDL_SCANCODE_LEFT])
-    {
-        g_state.player->set_acceleration(glm::vec3(-25.0f, 0.0f, 0.0f));
-        g_state.player->m_animation_indices = g_state.player->m_walking[g_state.player->LEFT];
+    if ((!g_gameOver && !g_gameWon) && g_direction_swap > 0) {
+        if (key_state[SDL_SCANCODE_LEFT])
+        {
+            g_state.player->set_acceleration(glm::vec3(-25.0f, 0.0f, 0.0f));
+            g_state.player->m_animation_indices = g_state.player->m_walking[g_state.player->LEFT];
+            if (g_direction != 1) {
+                g_direction_swap -= 1;
+                g_direction = 1;
+            }
+            
+        }
+        else if (key_state[SDL_SCANCODE_RIGHT])
+        {
+            g_state.player->set_acceleration(glm::vec3(25.0f, 0.0f, 0.0f));
+            g_state.player->m_animation_indices = g_state.player->m_walking[g_state.player->RIGHT];
+            if (g_direction != 2) {
+                g_direction_swap -= 1;
+                g_direction = 2;
+            }
+        }
+
+        if (glm::length(g_state.player->m_movement) > 1.0f)
+        {
+            g_state.player->m_movement = glm::normalize(g_state.player->m_movement);
+        }
     }
-    else if (key_state[SDL_SCANCODE_RIGHT])
-    {
-        g_state.player->set_acceleration(glm::vec3(25.0f, 0.0f, 0.0f));
-        g_state.player->m_animation_indices = g_state.player->m_walking[g_state.player->RIGHT];
+    else {
+        if (key_state[SDL_SCANCODE_ESCAPE])
+        {
+            g_game_is_running = false;
+        }
     }
 
-    if (glm::length(g_state.player->m_movement) > 1.0f)
-    {
-        g_state.player->m_movement = glm::normalize(g_state.player->m_movement);
-    }
+    
 }
 
 void update()
@@ -236,7 +345,13 @@ void update()
         delta_time -= FIXED_TIMESTEP;
     }
 
+    if (g_state.player->m_collided_bottom || g_state.player->m_collided_left || g_state.player->m_collided_right || g_state.player->m_collided_top) {
+        g_state.player->set_movement(glm::vec3(0.0f));
+        g_state.player->set_acceleration(glm::vec3(0.0f));
+    }
+
     g_accumulator = delta_time;
+
 }
 
 void render()
@@ -245,6 +360,26 @@ void render()
 
     g_state.player->render(&g_program);
 
+    if (g_game_is_running) {
+        draw_text(&g_text_program, g_text_texture_id, std::string("Remaining Fuel: " + std::to_string(g_direction_swap)), 0.25f, 0.0f, glm::vec3(-2.5f, 3.0f, 0.0f));
+    }
+    if (g_state.player->m_collided_bottom || g_state.player->m_collided_left || g_state.player->m_collided_right || g_state.player->m_collided_top) {
+        if (g_state.player->m_finish) {
+            g_gameWon = true;
+        }
+        else {
+            g_gameOver = true;
+        }
+    }
+    
+    if (g_gameOver) {
+        draw_text(&g_text_program, g_text_texture_id, std::string("Mission Failed!"), 0.25f, 0.0f, glm::vec3(-1.0f, 0.5f, 0.0f));
+        draw_text(&g_text_program, g_text_texture_id, std::string("Press ESC/Q to exit"), 0.25f, 0.0f, glm::vec3(-1.5f, 0.0f, 0.0f));
+    }
+    else if (g_gameWon) {
+        draw_text(&g_text_program, g_text_texture_id, std::string("Mission Accomplished!"), 0.25f, 0.0f, glm::vec3(-1.0f, 0.5f, 0.0f));
+        draw_text(&g_text_program, g_text_texture_id, std::string("Press ESC/Q to exit"), 0.25f, 0.0f, glm::vec3(-1.5f, 0.0f, 0.0f));
+    }
     for (int i = 0; i < PLATFORM_COUNT; i++) g_state.platforms[i].render(&g_program);
 
     SDL_GL_SwapWindow(g_display_window);

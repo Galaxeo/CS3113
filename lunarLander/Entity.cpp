@@ -1,3 +1,12 @@
+/**
+* Author: Justin Cheok
+* Assignment: Lunar Lander
+* Date due: 2023-07-07, 11:59pm
+* I pledge that I have completed this assignment without
+* collaborating with anyone else, in conformance with the
+* NYU School of Engineering Policies and Procedures on
+* Academic Misconduct.
+**/
 #define GL_SILENCE_DEPRECATION
 #define STB_IMAGE_IMPLEMENTATION
 
@@ -133,6 +142,9 @@ void const Entity::check_collision_y(Entity* collidable_entities, int collidable
 
         if (check_collision(collidable_entity))
         {
+            if (collidable_entity->m_goal_platform) {
+                m_finish = true;
+            }
             // STEP 2: Calculate the distance between its centre and our centre
             //         and use that to calculate the amount of overlap between
             //         both bodies.
@@ -142,12 +154,12 @@ void const Entity::check_collision_y(Entity* collidable_entities, int collidable
             // STEP 3: "Unclip" ourselves from the other entity, and zero our
             //         vertical velocity.
             if (m_velocity.y > 0) {
-                m_position.y -= y_overlap;
+                //m_position.y -= y_overlap;
                 m_velocity.y = 0;
                 m_collided_top = true;
             }
             else if (m_velocity.y < 0) {
-                m_position.y += y_overlap;
+                //m_position.y += y_overlap;
                 m_velocity.y = 0;
                 m_collided_bottom = true;
             }
@@ -163,15 +175,18 @@ void const Entity::check_collision_x(Entity* collidable_entities, int collidable
 
         if (check_collision(collidable_entity))
         {
+            if (collidable_entity->m_goal_platform) {
+                m_finish = true;
+            }
             float x_distance = fabs(m_position.x - collidable_entity->m_position.x);
             float x_overlap = fabs(x_distance - (m_width / 2.0f) - (collidable_entity->m_width / 2.0f));
             if (m_velocity.x > 0) {
-                m_position.x -= x_overlap;
+                //m_position.x -= x_overlap;
                 m_velocity.x = 0;
                 m_collided_right = true;
             }
             else if (m_velocity.x < 0) {
-                m_position.x += x_overlap;
+                //m_position.x += x_overlap;
                 m_velocity.x = 0;
                 m_collided_left = true;
             }
