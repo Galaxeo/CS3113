@@ -352,6 +352,11 @@ void update()
 
     g_accumulator = delta_time;
 
+    if (g_state.player->get_position().y <= -3.5f) {
+        g_state.player->set_movement(glm::vec3(0.0f));
+        g_state.player->set_acceleration(glm::vec3(0.0f));
+    }
+
 }
 
 void render()
@@ -370,6 +375,9 @@ void render()
         else {
             g_gameOver = true;
         }
+    }
+    if (g_state.player->get_position().y <= -3.5f) {
+        g_gameOver = true;
     }
     
     if (g_gameOver) {
