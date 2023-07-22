@@ -1,0 +1,15 @@
+﻿  Entity.cpp
+C:\Users\cheok\OneDrive\Desktop\CS3113\riseOfAI\Entity.h(104,56): warning C4244: 'return': conversion from 'const float' to 'const int', possible loss of data
+C:\Users\cheok\OneDrive\Desktop\CS3113\riseOfAI\Entity.h(105,56): warning C4244: 'return': conversion from 'const float' to 'const int', possible loss of data
+C:\Users\cheok\OneDrive\Desktop\CS3113\riseOfAI\Entity.cpp(156,55): warning C4244: '+=': conversion from 'double' to 'T', possible loss of data
+          with
+          [
+              T=float
+          ]
+  main.cpp
+C:\Users\cheok\OneDrive\Desktop\CS3113\riseOfAI\Entity.h(104,56): warning C4244: 'return': conversion from 'const float' to 'const int', possible loss of data
+C:\Users\cheok\OneDrive\Desktop\CS3113\riseOfAI\Entity.h(105,56): warning C4244: 'return': conversion from 'const float' to 'const int', possible loss of data
+C:\Users\cheok\OneDrive\Desktop\CS3113\riseOfAI\main.cpp(141,23): warning C4018: '<': signed/unsigned mismatch
+C:\Users\cheok\OneDrive\Desktop\CS3113\riseOfAI\main.cpp(307,36): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+  Generating Code...
+  SDLProject.vcxproj -> C:\Users\cheok\OneDrive\Desktop\CS3113\riseOfAI\Debug\SDLProject.exe
