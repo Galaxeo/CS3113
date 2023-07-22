@@ -1,3 +1,0 @@
-E:\NYU\Summer2022\CS3113\hw\project3\VisualStudioSDLProject\SDLProject\Debug\SDLProject.exe
-C:\Users\cheok\OneDrive\Desktop\CS3113 dog\hw\project3\VisualStudioSDLProject\SDLProject\Debug\SDLProject.exe
-C:\Users\cheok\OneDrive\Desktop\CS3113\lunarLander\Debug\SDLProject.exe
